@@ -1,4 +1,4 @@
-.PHONY: install install-dev download-data train-baseline train train-all tune evaluate serve test lint docker-build docker-run monitor-drift clean
+.PHONY: install install-dev download-data train-baseline train train-all train-large tune evaluate serve mlflow-ui test lint docker-build docker-run monitor-drift clean
 
 PYTHON ?= python
 CONFIG ?= configs/train.yaml
@@ -22,6 +22,9 @@ train:
 train-all:
 	$(PYTHON) -m taxi_duration.cli train --config $(CONFIG) --models baseline ridge hist_gbr lightgbm
 
+train-large:
+	$(PYTHON) -m taxi_duration.cli train --config configs/train_large.yaml --models baseline ridge hist_gbr lightgbm
+
 tune:
 	$(PYTHON) -m taxi_duration.cli tune --config $(CONFIG)
 
@@ -30,6 +33,9 @@ evaluate:
 
 serve:
 	uvicorn taxi_duration.api.main:app --host 0.0.0.0 --port 8000
+
+mlflow-ui:
+	mlflow ui --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5001
 
 test:
 	pytest -q

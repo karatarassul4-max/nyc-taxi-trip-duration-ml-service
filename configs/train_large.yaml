@@ -1,0 +1,40 @@
+dataset:
+  year: 2024
+  train_months: [1]
+  validation_months: [2]
+  test_months: [3]
+  raw_dir: data/raw
+  max_rows_per_month: 500000
+  random_seed: 42
+
+training:
+  experiment_name: nyc-taxi-trip-duration-large
+  target: trip_duration_minutes
+  artifact_path: artifacts/model_large.joblib
+  metrics_path: reports/metrics_large.json
+  experiment_table_path: reports/experiment_table_large.md
+  primary_metric: mae
+
+features:
+  min_duration_minutes: 1
+  max_duration_minutes: 120
+  min_trip_distance: 0.1
+  max_trip_distance: 60
+  numeric:
+    - passenger_count
+    - trip_distance
+    - pickup_hour
+    - pickup_dayofweek
+    - pickup_month
+    - is_weekend
+    - pickup_dropoff_same_zone
+  categorical:
+    - PULocationID
+    - DOLocationID
+    - RatecodeID
+    - payment_type
+
+tuning:
+  n_iter: 12
+  cv_splits: 3
+  random_seed: 42

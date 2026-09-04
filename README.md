@@ -1,5 +1,10 @@
 # NYC Taxi Trip Duration ML Service
 
+[![CI](https://github.com/karatarassul4-max/nyc-taxi-trip-duration-ml-service/actions/workflows/ci.yml/badge.svg)](https://github.com/karatarassul4-max/nyc-taxi-trip-duration-ml-service/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-inference-009688)](https://fastapi.tiangolo.com/)
+[![MLflow](https://img.shields.io/badge/MLflow-tracking-0194E2)](https://mlflow.org/)
+
 Production-style machine learning service for predicting NYC Yellow Taxi trip duration before a trip is completed.
 
 This project is designed as a portfolio-grade Junior ML Engineer project. It covers the full lifecycle from raw public data to experiment tracking, model artifacts, FastAPI inference, Docker, tests, CI, and drift monitoring.
@@ -93,6 +98,7 @@ On Windows without `make`, run the commands from the `Makefile` directly.
 ```bash
 make download-data
 make train-all
+make train-large
 make tune
 make monitor-drift
 make test
@@ -103,9 +109,18 @@ Equivalent CLI:
 ```bash
 taxi-duration download-data --config configs/train.yaml
 taxi-duration train --config configs/train.yaml --models baseline ridge hist_gbr lightgbm
+taxi-duration train --config configs/train_large.yaml --models baseline ridge hist_gbr lightgbm
 taxi-duration tune --config configs/train.yaml
 taxi-duration monitor-drift --config configs/train.yaml
 ```
+
+MLflow UI:
+
+```bash
+make mlflow-ui
+```
+
+Then open `http://127.0.0.1:5001`.
 
 ## Serve API
 
@@ -138,7 +153,9 @@ Train locally first so `artifacts/model.joblib` exists.
 
 ## Experiment Results
 
-Experiments below were run locally on September 4, 2026 using the default config:
+Experiments below were run locally on September 4, 2026.
+
+### Default Run
 
 - Train: January 2024, first 120,000 rows before cleaning
 - Validation: February 2024, first 120,000 rows before cleaning
@@ -159,10 +176,31 @@ Best model by validation MAE: `lightgbm`.
 
 The tuned `HistGradientBoostingRegressor` reached validation MAE `3.6138` and test MAE `3.2432`, so the default saved model remains LightGBM.
 
+### Larger Run
+
+This run uses `configs/train_large.yaml` with the first 500,000 raw rows per month before cleaning.
+
+Best model by validation MAE: `lightgbm`.
+
+| model | split | MAE | RMSE | R2 |
+| --- | --- | ---: | ---: | ---: |
+| baseline | validation | 7.6787 | 11.9843 | -0.0776 |
+| baseline | test | 8.2696 | 13.1737 | -0.0953 |
+| ridge | validation | 4.2013 | 6.2809 | 0.7040 |
+| ridge | test | 4.5199 | 7.0160 | 0.6893 |
+| hist_gbr | validation | 3.2659 | 5.2190 | 0.7956 |
+| hist_gbr | test | 3.5494 | 5.8930 | 0.7808 |
+| lightgbm | validation | 3.1628 | 5.1020 | 0.8047 |
+| lightgbm | test | 3.4627 | 5.7959 | 0.7880 |
+
+![Experiment results](docs/assets/experiment-results.png)
+
 Generated local files:
 
 - `reports/metrics.json`
+- `reports/metrics_large.json`
 - `reports/experiment_table.md`
+- `reports/experiment_table_large.md`
 - `reports/tuning_metrics.json`
 - local MLflow runs under `mlruns/`
 
@@ -186,3 +224,9 @@ The first real drift run showed notable month/day-of-week and location distribut
 - MLflow logs params and metrics for reproducibility.
 - FastAPI/Pydantic boundary separates API payloads from training column names.
 - Drift monitoring is intentionally lightweight and locally runnable.
+
+## Documentation
+
+- [Model card](docs/model_card.md)
+- [Senior ML engineering review](docs/repository_review.md)
+- [CV bullets](docs/cv_bullets.md)
